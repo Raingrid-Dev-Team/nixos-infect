@@ -137,14 +137,31 @@ makeAzureConf() {
   networking.hostName = "$(hostname -s)";
   networking.domain = "$(hostname -d)";
   services.openssh.enable = true;
-  users.users.$AZUREUSER.openssh.authorizedKeys.keys = [$(while read -r line; do
-    line=$(echo -n "$line" | sed 's/\r//g')
-    trimmed_line=$(echo -n "$line" | xargs)
-    echo -n "''$trimmed_line'' "
-  done <<< "$keys")];
-  users.users.$AZUREUSER.groups = ["$AZUREUSER" "wheel" "networkmanager" ];
+
+  users.users.$AZUREUSER = {
+    isNormalUser = true;
+    uid = 1000;
+    openssh.authorizedKeys.keys = [$(while read -r line; do
+        line=$(echo -n "$line" | sed 's/\r//g')
+        trimmed_line=$(echo -n "$line" | xargs)
+        echo -n "''$trimmed_line'' "
+    done <<< "$keys")];
+    group = "$AZUREUSER";
+    extraGroups = [ "wheel" "networkmanager" ];
+  };
   users.groups.$AZUREUSER = {};
-  users.users.$AZUREUSER.isNormalUser = true;
+  users.users.deploy = {
+    isSystemUser = true;
+    useDefaultShell = true;
+    uid = 1002;
+    group = "deploy";
+    openssh.authorizedKeys.keys = [$(while read -r line; do
+        line=$(echo -n "$line" | sed 's/\r//g')
+        trimmed_line=$(echo -n "$line" | xargs)
+        echo -n "''$trimmed_line'' "
+    done <<< "$keys")];
+  };
+  users.groups.deploy = {};
   system.stateVersion = "23.11";
 }
 EOF
