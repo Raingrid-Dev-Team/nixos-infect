@@ -142,8 +142,9 @@ makeAzureConf() {
     trimmed_line=$(echo -n "$line" | xargs)
     echo -n "''$trimmed_line'' "
   done <<< "$keys")];
-  users.users.$AZUREUSER.group = "$AZUREUSER";
+  users.users.$AZUREUSER.groups = ["$AZUREUSER" "wheel" "networkmanager" ];
   users.groups.$AZUREUSER = {};
+  users.users.$AZUREUSER.isNormalUser = true;
   system.stateVersion = "23.11";
 }
 EOF
